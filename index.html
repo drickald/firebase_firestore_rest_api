@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Firestore Management Console</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <section id="auth-section" class="auth-container">
+        <div class="login-wrapper">
+            <div class="login-card">
+                <div class="logo-area">
+                    <img src="https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png" alt="Firebase Logo">
+                    <h2>Firestore Console</h2>
+                    <p class="subtitle">Manage your data with ease</p>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <input type="email" id="login-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                <button id="btn-login" class="fb-btn-primary">Sign In</button>
+                <p class="auth-footer">Secured by Firebase Authentication</p>
+                <p class="auth-footer">Powered by <strong>Firebase Firestore REST API</strong></p>
+            <p class="auth-footer">Learn more: <a href="https://firebase.google.com/docs/firestore" target="_blank" rel="noopener noreferrer">Official Documentation</a></p>
+            </div>
+        </div>
+    </section>
+
+    <main id="dashboard" class="console-container hidden">
+        <nav class="top-nav">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <img src="https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png" alt="Firebase" class="nav-logo">
+                    <span>Firestore Console</span>
+                </div>
+                <button id="btn-logout" class="nav-logout">Sign Out</button>
+            </div>
+        </nav>
+
+        <div class="content-wrapper">
+            <aside class="control-panel">
+                <h3 class="panel-title">Collections</h3>
+                <select id="coll-select" class="fb-select">
+                    <option value="">Select Collection</option>
+                    <option value="students">students</option>
+                    <option value="instructors">instructors</option>
+                    <option value="programs">programs</option>
+                </select>
+                
+                <div class="action-buttons">
+                    <button id="btn-fetch" class="fb-btn-outline">↻ Refresh Data</button>
+                    <button id="open-add-modal" class="fb-btn-primary">+ Add Document</button>
+                </div>
+
+                <div class="search-box">
+                    <label>Search Documents</label>
+                    <input type="text" id="data-search" placeholder="Filter by ID..." disabled>
+                </div>
+            </aside>
+
+            <section class="data-area">
+                <div id="data-display" class="doc-list">
+                    </div>
+            </section>
+        </div>
+        <footer class="page-footer">
+            <div class="footer-content">
+                <p>Powered by <strong>Firebase Firestore REST API</strong></p>
+                <p>Learn more: <a href="https://firebase.google.com/docs/firestore" target="_blank" rel="noopener noreferrer">Official Documentation</a></p>
+            </div>
+        </footer>
+    </main>
+
+    <div id="add-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content fb-card">
+            <header class="modal-header">
+                <div>
+                    <h3 id="modal-title">Add New Document</h3>
+                    <p class="collection-info">Collection: <span id="modal-collection-name" class="collection-badge">None</span></p>
+                </div>
+                <button class="modal-close" onclick="document.getElementById('add-modal').classList.add('hidden')">&times;</button>
+            </header>
+            
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Document ID <span class="optional">(Required for Edit)</span></label>
+                    <input type="text" id="new-id" placeholder="e.g. STU-001">
+                </div>
+                
+                <div id="dynamic-fields-container"></div>
+            </div>
+
+            <footer class="modal-footer">
+                <button id="btn-cancel" class="fb-btn-flat">Cancel</button>
+                <button id="btn-save" class="fb-btn-primary" data-mode="create">Save Document</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Add/Edit -->
+    <div id="confirm-add-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content fb-card confirm-modal">
+            <header class="modal-header">
+                <div>
+                    <h3 id="confirm-add-title">Confirm Add Document</h3>
+                </div>
+            </header>
+            <div class="modal-body">
+                <p id="confirm-add-message" style="text-align: center; color: var(--fb-text); font-size: 15px; margin: 20px 0;">Are you sure you want to add this document?</p>
+                <div id="confirm-add-preview" style="background: var(--fb-bg); padding: 16px; border-radius: 8px; margin: 16px 0; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+            <footer class="modal-footer">
+                <button id="btn-confirm-add-cancel" class="fb-btn-flat">Cancel</button>
+                <button id="btn-confirm-add-proceed" class="fb-btn-primary">Confirm</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Delete -->
+    <div id="confirm-delete-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content fb-card confirm-modal">
+            <header class="modal-header">
+                <div>
+                    <h3>Confirm Delete Document</h3>
+                </div>
+            </header>
+            <div class="modal-body">
+                <p style="text-align: center; color: var(--fb-danger); font-size: 15px; margin: 20px 0; font-weight: 600;">⚠️ This action cannot be undone!</p>
+                <p id="confirm-delete-message" style="text-align: center; color: var(--fb-text); font-size: 14px; margin: 16px 0;">Document: <strong id="confirm-delete-id"></strong></p>
+                <p style="text-align: center; color: var(--fb-text-muted); font-size: 13px;">Are you sure you want to delete this document?</p>
+            </div>
+            <footer class="modal-footer">
+                <button id="btn-confirm-delete-cancel" class="fb-btn-flat">Cancel</button>
+                <button id="btn-confirm-delete-proceed" class="fb-btn-primary" style="background: linear-gradient(135deg, var(--fb-danger) 0%, #dc2626 100%); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Delete Document</button>
+            </footer>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
